@@ -326,6 +326,7 @@ const  __FlashStringHelper *  AntEventType2LongDescription(const ant_evt_t *evt)
 ANTProfile::ANTProfile(ANTTransmissionMode mode)
 {
    m_op_mode = mode;
+   _SetOnDeviceFound_cb = NULL;
 }
 
 void ANTProfile::ProcessMessage(ant_evt_t* evt)
@@ -347,6 +348,18 @@ void ANTProfile::ProcessMessage(ant_evt_t* evt)
                   DecodeMessage(evt->message.ANT_MESSAGE_aucPayload);
                   newRxData = true;
                   newMillis = millis();
+               }
+               if(evt->message.ANT_MESSAGE_stExtMesgBF.bANTDeviceID)
+               {
+                  m_last_device_id = (uint16_t)(evt->message.ANT_MESSAGE_aucExtData[0] | ((uint16_t)evt->message.ANT_MESSAGE_aucExtData[1] << 8));
+                  if (_SetOnDeviceFound_cb != NULL)
+                  {
+                     _SetOnDeviceFound_cb(m_last_device_id);
+                  }
+               }
+               if(evt->message.ANT_MESSAGE_stExtMesgBF.bANTRssi)
+               {
+                  m_last_rssi = evt->message.ANT_MESSAGE_aucExtData[5];
                }
                break;
 
@@ -452,6 +465,9 @@ uint32_t ANTProfile::Setup(uint8_t channel)
     }
     else if (m_op_mode == ANTTransmissionMode::RX)
     {
+      if(scanMode){
+         err_code = sd_ant_lib_config_set(ANT_LIB_CONFIG_MESG_OUT_INC_RSSI | ANT_LIB_CONFIG_MESG_OUT_INC_DEVICE_ID);
+      }
         err_code = ant_channel_init(&m_disp_config);
         if (err_code != NRF_SUCCESS)
         {

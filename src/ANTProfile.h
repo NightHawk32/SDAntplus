@@ -98,11 +98,14 @@ public:
    //Profile name 
    void setName(const char* pname) {name=pname;}
    const char* getName(void) {return name;}
+   void setScanMode(const bool scanOn) {scanMode=scanOn;}
+   const bool getScanMode(void) {return scanMode;}
    uint8_t getChannelNumber(void) { return m_channel_number;}
 
    void ProcessMessage(ant_evt_t* evt);
    void setUnhandledEventListener(void (*fp)(ant_evt_t* evt)) { _AntUnhandledEventLister = fp; };
    void setAllEventListener(void (*fp)(ant_evt_t* evt)) { _AntAllEventLister = fp; };
+   void SetOnDeviceFound(void (*fp)(uint16_t)) { _SetOnDeviceFound_cb = fp;}
    //void setCustomDataPtr(void* ptr) { m_customDataPtr = ptr;}
    //void* getCustomDataPtr(void) {return m_customDataPtr;} 
    bool newRxData = false;
@@ -116,6 +119,9 @@ protected:
    void (*_AntUnhandledEventLister)(ant_evt_t* evt) = NULL; 
    void (*_AntAllEventLister)(ant_evt_t* evt) = NULL; 
    const char *  name = "";
+   bool scanMode = false;
+
+   void (*_SetOnDeviceFound_cb) (uint16_t);
 
    uint8_t m_channel_number; ///< Channel number assigned to the profile.
    uint8_t m_message_payload[ANT_STANDARD_DATA_PAYLOAD_SIZE];
@@ -124,6 +130,9 @@ protected:
    ant_channel_config_t m_channel_sens_config;
    ant_channel_config_t m_disp_config;
    void* m_customDataPtr= NULL; //the last time data sent/received
+
+   uint8_t m_last_rssi = 0;
+   uint16_t m_last_device_id = 0;
 
 private:
 

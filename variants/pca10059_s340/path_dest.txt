@@ -1,0 +1,1 @@
+pca10059_s340.json to .platformio\platforms\nordicnrf52\boards
